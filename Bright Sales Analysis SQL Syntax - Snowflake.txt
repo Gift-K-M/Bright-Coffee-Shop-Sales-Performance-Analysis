@@ -1,26 +1,12 @@
--- Creating a table called bright_sales
-CREATE OR REPLACE TABLE bright_sales (
-    transaction_id      INT,
-    transaction_date    DATE,
-    transaction_time    TIME, 
-    transaction_qty     INT,
-    store_id            INT,
-    store_location      STRING,
-    product_id          INT,
-    unit_price          FLOAT,
-    product_category    STRING,
-    product_type        STRING,
-    product_detail      STRING
-);
+/* SECTION 1: DATA VALIDATION ANALYSIS*/
 
 -- Check if the data has be successfully loaded correctly 
-
 SELECT COUNT(*) FROM bright_sales;
 
 SELECT * FROM bright_sales LIMIT 10;
 
 
--- Count total rows in the dataset
+-- Count total rows in the bright sales dataset
 SELECT COUNT(*) AS total_rows FROM bright_sales;
 
 
@@ -32,56 +18,59 @@ SELECT
 FROM bright_sales;
 
 
--- Get total revenue and units sold by product type
+/*SECTION 2: REVENUES AND UNITS SOLD ANALYSIS*/
+
+-- get revenue and units sold by PRODUCT CATEGORY
+SELECT
+  product_category,
+  SUM(transaction_qty) AS total_units_sold,
+  ROUND(SUM(unit_price * transaction_qty)::numeric,2) AS total_revenue
+FROM bright_sales
+GROUP BY product_category
+ORDER BY total_revenue DESC;
+
+
+-- Get revenue and units sold by PRODUCT TYPE
 SELECT
   product_type,
-  SUM(unit_price * transaction_qty) AS total_revenue,
+  ROUND(SUM(unit_price * transaction_qty)::numeric,2) AS total_revenue,
   SUM(transaction_qty) AS total_units_sold
 FROM bright_sales
 GROUP BY product_type
 ORDER BY total_revenue DESC;
 
 
--- Revenue and volume by specific product detail
+-- Get revenue and units sold by specific PRODUCT DETAIL
 SELECT
   product_detail,
-  SUM(unit_price * transaction_qty) AS total_revenue,
+  ROUND(SUM(unit_price * transaction_qty)::numeric,2) AS total_revenue,
   SUM(transaction_qty) AS total_units_sold
 FROM bright_sales
 GROUP BY product_detail
 ORDER BY total_revenue DESC;
 
 
--- Hourly sales performance
-SELECT
-  TO_CHAR(DATE_TRUNC('HOUR', transaction_time), 'HH24:MI') AS hour_bucket,
-  COUNT(*) AS transaction_count,
-  SUM(transaction_qty) AS units_sold,
-  SUM(unit_price * transaction_qty) AS total_revenue
-FROM bright_sales
-GROUP BY hour_bucket
-ORDER BY hour_bucket;
-
-
--- Sales and revenue by store location
+-- Get units revenue and units sold by STORE LOCATION
 SELECT
   store_location,
   SUM(transaction_qty) AS total_units_sold,
-  SUM(unit_price * transaction_qty) AS total_revenue
+  ROUND(SUM(unit_price * transaction_qty)::numeric,2) AS total_revenue
 FROM bright_sales
 GROUP BY store_location
 ORDER BY total_revenue DESC;
 
 
+/*SECTION 3: TIME, DAYS AND MONTHS ANALYSIS */
 
--- Revenue and quantity by product category
+-- Hourly sales performance
 SELECT
-  product_category,
-  SUM(transaction_qty) AS total_units_sold,
-  SUM(unit_price * transaction_qty) AS total_revenue
+  TO_CHAR(DATE_TRUNC('HOUR', transaction_time), 'HH24:MI') AS hour_bucket,
+  COUNT(*) AS transaction_count,
+  SUM(transaction_qty) AS units_sold,
+  ROUND(SUM(unit_price * transaction_qty)::numeric,2) AS total_revenue
 FROM bright_sales
-GROUP BY product_category
-ORDER BY total_revenue DESC;
+GROUP BY hour_bucket
+ORDER BY hour_bucket;
 
 
 -- Sales quantity and revenue by day of the week
@@ -94,7 +83,7 @@ SELECT
   END AS time_of_day,
   
   SUM(transaction_qty) AS items_sold,
-  SUM(unit_price * transaction_qty) AS total_revenue
+  ROUND(SUM(unit_price * transaction_qty)::numeric,2) AS total_revenue
 FROM bright_sales
 GROUP BY time_of_day;
 
@@ -104,15 +93,16 @@ SELECT
   TO_CHAR(transaction_date, 'Mon') AS month,
   COUNT(*) AS transactions,
   SUM(transaction_qty) AS total_units_sold,
-  SUM(unit_price * transaction_qty) AS total_revenue
+  ROUND(SUM(unit_price * transaction_qty)::numeric,2) AS total_revenue
 FROM bright_sales
 GROUP BY month
 ORDER BY total_revenue DESC;
 
-
+/*SECTION 4: FINAL DERIVED DATASET*/
 
 -- Final created table for excel pivot analysis charts
-CREATE OR REPLACE TABLE bright_sales_analysis AS
+DROP TABLE IF EXISTS bright_sales_analysis;
+CREATE TABLE bright_sales_analysis AS
 SELECT
   transaction_id,
   transaction_date,
@@ -150,5 +140,5 @@ SELECT
 
 FROM bright_sales;
 
--- Get final table and save file as excel .csv
+-- Validate final table, download and save file as excel .csv for analysis
 SELECT * FROM bright_sales_analysis;
