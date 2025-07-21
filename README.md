@@ -32,7 +32,7 @@ The main objective is to help stakeholders understand which store locations perf
 
 ## 🛠 Tools Used
 
-- **Snowflake SQL** – Data processing and transformation  
+- **Snowflake & PostgreSQL** – Data processing and transformation  
 - **Excel** – Pivot tables and chart-based dashboards  
 - **Miro** – Initial planning and architecture diagram  
 - **PowerPoint / Canva** – Final presentation for executive stakeholders  
